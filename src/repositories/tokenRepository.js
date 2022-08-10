@@ -17,3 +17,12 @@ export function updateToken(token) {
     [new Date(), token]
   );
 }
+
+export function deleteExpired(expireDate) {
+  return connection.query(
+    `
+  DELETE FROM sessions WHERE "createdAt" < $1
+  `,
+    [expireDate]
+  );
+}
