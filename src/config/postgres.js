@@ -8,13 +8,13 @@ dotenv.config();
 const MODE = process.env.MODE;
 const connectionString = process.env.DATABASE_URL;
 const connectionConfig = {
-  connectionString
-}
+  connectionString,
+};
 
-if (MODE === 'PROD') {
+if (MODE === "PROD") {
   connectionConfig.ssl = {
     rejectUnauthorized: false,
-  }
+  };
   console.log(connectionConfig);
 }
 

@@ -17,11 +17,16 @@ export async function signIn(req, res) {
       return;
     }
 
+    const decryptedPasswordByBcrypt = bcrypt.compareSync(
+      password,
+      user[0].password
+    );
+
     const decryptedPassword = jwt.verify(
       user[0].password,
       process.env.PASSWORD_SECRET
     );
-    if (password !== decryptedPassword) {
+    if (password !== decryptedPassword && !decryptedPasswordByBcrypt) {
       res.status(401).send("E-mail e/ou senha inválidos!");
       return;
     }
