@@ -5,6 +5,6 @@ import signInSchema from "../schemas/signInSchema.js";
 
 const router = Router();
 
-router.post("/signin", validateSchema(signInSchema), signIn);
+router.post("/", validateSchema(signInSchema), signIn);
 
 export default router;
