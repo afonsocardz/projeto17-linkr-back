@@ -2,11 +2,11 @@ import dayjs from "dayjs";
 import { postRepository } from "../repositories/postRepository.js";
 
 async function createPost(req, res) {
-  const userId = res.locals.userId;
+  const user = res.locals.user;
   const post = req.body;
   try {
     const today = dayjs();
-    await postRepository.createPost(userId, today, post);
+    await postRepository.createPost(user.id, today, post);
     res.sendStatus(201);
   } catch (err) {
     console.log(err);

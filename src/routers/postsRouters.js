@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { createPost, getPosts } from '../controllers/postsControllers.js';
 import validateSchema from '../middlewares/validateSchema.js';
+import validateToken from '../middlewares/validateToken.js';
 import Post from '../schemas/Post.js';
 
-const route = Router();
+const router = Router();
 
-route.get('/', getPosts);
-route.post('/', validateSchema(Post), createPost);
+router.get('/', getPosts);
+router.post('/', validateToken, validateSchema(Post), createPost);
 
-export default route;
+export default router;
