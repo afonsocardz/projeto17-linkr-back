@@ -8,3 +8,5 @@ function validateSchema(schema) {
     next();
   };
 }
+
+export default validateSchema;
