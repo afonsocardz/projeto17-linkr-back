@@ -18,7 +18,7 @@ async function createPost(req, res) {
 async function getPosts(req, res) {
   try {
     const posts = await postRepository.getAllPosts();
-    const metadata = Promise.all(posts.map(async ({url}) => await urlMetadata(url)));
+    const metadata = posts.map(async ({url}) => await urlMetadata(url));
     console.log(metadata);
     res.status(200).send(posts);
   } catch (err) {
