@@ -22,11 +22,7 @@ export async function signIn(req, res) {
       user[0].password
     );
 
-    const decryptedPassword = jwt.verify(
-      user[0].password,
-      process.env.PASSWORD_SECRET
-    );
-    if (password !== decryptedPassword && !decryptedPasswordByBcrypt) {
+    if (!decryptedPasswordByBcrypt) {
       res.status(401).send("E-mail e/ou senha inválidos!");
       return;
     }
