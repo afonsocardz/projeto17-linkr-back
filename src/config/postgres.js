@@ -14,8 +14,8 @@ const connectionConfig = {
 if (MODE === "PROD") {
   connectionConfig.ssl = {
     rejectUnauthorized: false,
-  };
-  console.log(connectionConfig);
+  }
+
 }
 
 const connection = new Pool(connectionConfig);
