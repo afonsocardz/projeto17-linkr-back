@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import urlMetadata from "url-metadata";
+import ogs from "open-graph-scraper";
 import { postRepository } from "../repositories/postRepository.js";
 
 async function createPost(req, res) {
@@ -18,7 +19,7 @@ async function createPost(req, res) {
 async function getPosts(req, res) {
   try {
     const posts = await postRepository.getAllPosts();
-    const metadata = await Promise.all(posts.map(async ({url}) => await urlMetadata(url)));
+    const metadata = await Promise.all(posts.map(async ({url}) => await ogs({url: url})));
     console.log(metadata);
     res.status(200).send(posts);
   } catch (err) {
