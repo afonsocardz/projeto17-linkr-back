@@ -8,7 +8,7 @@ import {
 
 dotenv.config();
 
-async function signUpUsers(req, res) {
+export async function signUpUsers(req, res) {
   const { email, password, username, pictureUrl } = req.body;
   const salt = Number(process.env.HASH_ROUNDS);
 
@@ -32,5 +32,3 @@ async function signUpUsers(req, res) {
     res.sendStatus(500);
   }
 }
-
-export { signUpUsers };

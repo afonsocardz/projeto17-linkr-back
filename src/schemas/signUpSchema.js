@@ -10,4 +10,4 @@ const signUpSchema = joi.object({
   pictureUrl: joi.string().required()
 });
 
-export { signUpSchema };
+export default signUpSchema;

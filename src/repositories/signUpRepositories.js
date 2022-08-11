@@ -9,12 +9,11 @@ async function checksIfUserNameExists(username) {
 }
 
 async function registersUser( username, email, passwordHash, pictureUrl) {
-  const data = new Date();
 
   return connection.query(
-    `INSERT INTO users (name, username, email, password, "userPicture", "createdAt") 
-    VALUES ($1, $2, $3, $4, $5, $6)`,
-  [username, username, email, passwordHash, pictureUrl, data]
+    `INSERT INTO users (username, email, password, "userPicture") 
+    VALUES ($1, $2, $3, $4)`,
+  [username, email, passwordHash, pictureUrl]
   );
 }
 
