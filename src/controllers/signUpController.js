@@ -17,11 +17,11 @@ export async function signUpUsers(req, res) {
   try {
     const { rowCount: emails } = await checksIfEmailExists(email);
 
-    if (emails === 1) return res.sendStatus(409);
+    if (emails === 1) return res.status(409).send("Email already registered");
 
     const { rowCount: usernames } = await checksIfUserNameExists(username);
 
-    if (usernames === 1) return res.sendStatus(409);
+    if (usernames === 1) return res.status(409).send("User already registered");
 
     await registersUser(username, email, passwordHash, pictureUrl);
 
