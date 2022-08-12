@@ -4,7 +4,8 @@ const Post = joi.object({
   url: joi.string()
     .uri()
     .required(),
-  message: joi.string(),
+  message: joi.string()
+  .empty(),
   userId: joi.number()
     .required(),
 })

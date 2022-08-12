@@ -7,7 +7,11 @@ async function createPost(userId, today, { url, message = null }) {
 }
 
 async function getAllPosts(){
-  const {rows: posts} = await connection.query(`SELECT * FROM posts ORDER BY "createdAt" DESC`);
+  const {rows: posts} = await connection.query(`
+    SELECT posts.url, posts.message, users."userPicture", users.username FROM posts 
+    JOIN users ON users.id = posts."userId"
+    ORDER BY posts."createdAt" DESC
+  `);
   return posts;
 }
 
