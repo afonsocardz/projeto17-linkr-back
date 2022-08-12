@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import {
   createSession,
@@ -10,16 +11,18 @@ dotenv.config();
 export async function signIn(req, res) {
   try {
     const { email, password } = req.body;
-    const { rows: user } = await getUserByEmail(email);
+    const {
+      rows: [user],
+    } = await getUserByEmail(email);
 
-    if (user.length === 0) {
+    if (!user) {
       res.status(401).send("E-mail e/ou senha inválidos!");
       return;
     }
 
     const decryptedPasswordByBcrypt = bcrypt.compareSync(
       password,
-      user[0].password
+      user.password
     );
 
     if (!decryptedPasswordByBcrypt) {
@@ -27,12 +30,21 @@ export async function signIn(req, res) {
       return;
     }
     const token = jwt.sign(
-      { email: user[0].email, username: user[0].username },
+      { email: user.email, username: user.username },
       process.env.TOKEN_SECRET
     );
-    await createSession(user[0].id, token);
-    res.status(200).send(token);
+
+    await createSession(user.id, token);
+    res.status(200).send({
+      token,
+      user: {
+        username: user.username,
+        id: user.id,
+        userPicture: user.userPicture,
+      },
+    });
   } catch (err) {
+    console.log(err);
     res.status(500).send("Erro interno!");
   }
 }
