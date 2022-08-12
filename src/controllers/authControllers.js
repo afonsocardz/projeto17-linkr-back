@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import {
   createSession,
   getUserByEmail,
+  deleteSessionByToken,
 } from "../repositories/userRepository.js";
 
 dotenv.config();
@@ -43,6 +44,17 @@ export async function signIn(req, res) {
         userPicture: user.userPicture,
       },
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erro interno!");
+  }
+}
+
+export async function deleteSession(req, res) {
+  try {
+    const { token } = res.locals;
+    await deleteSessionByToken(token);
+    res.sendStatus(200);
   } catch (err) {
     console.log(err);
     res.status(500).send("Erro interno!");
