@@ -26,7 +26,6 @@ export async function signUpUsers(req, res) {
     await registersUser(username, email, passwordHash, pictureUrl);
 
     res.sendStatus(201);
-
   } catch (error) {
     console.error(error);
     res.sendStatus(500);
