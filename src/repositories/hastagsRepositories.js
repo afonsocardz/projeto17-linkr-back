@@ -3,10 +3,14 @@ import connection from "../config/postgres.js";
 async function trendingHashtags() {
   return connection.query(
     `
-        SELECT COUNT(h."hashtagName") AS trending 
+        SELECT
+          h."hashtagName" AS hashtag,
+          COUNT(ph."hashtagId") AS trending
         FROM hashtags h
-        GROUP BY h."hashtagName"
+        LEFT JOIN posts_hashtags ph ON ph."hashtagId" = h.id 
+        GROUP BY hashtag
         ORDER BY trending DESC
+        LIMIT 20
     `
   );
 }
