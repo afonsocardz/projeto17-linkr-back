@@ -9,6 +9,7 @@ const router = Router();
 router.use("/posts", postsRouters);
 router.use("/", authRouters);
 router.use("/", hashtagRouters);
+//router.use("/session", authRouters);
 
 setInterval(verifyExpiredTokens, 60000);
 

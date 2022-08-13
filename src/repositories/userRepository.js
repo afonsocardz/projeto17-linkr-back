@@ -17,3 +17,11 @@ export function createSession(userId, token) {
     [userId, token]
   );
 }
+
+export function deleteSessionByToken(token) {
+  return connection.query(
+    `DELETE FROM sessions 
+    WHERE token = $1`,
+  [token],
+  )
+};
