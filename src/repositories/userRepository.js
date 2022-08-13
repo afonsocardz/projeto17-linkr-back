@@ -25,3 +25,12 @@ export function deleteSessionByToken(token) {
   [token],
   )
 };
+
+export function getUserById(userId) {
+  return connection.query(`
+    SELECT users.username, users."userPicture" AS "ProfileImage"
+    FROM users
+    WHERE users.id = $1`, [userId],
+  )
+};
+
