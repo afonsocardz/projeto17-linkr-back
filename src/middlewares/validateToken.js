@@ -23,7 +23,10 @@ async function validateToken(request, response, next) {
 
     await updateToken(token);
 
+    console.log(user[0]);
+
     response.locals.user = user[0];
+    response.locals.UserId = user[0].id;
     response.locals.token = token; 
 
     next();
