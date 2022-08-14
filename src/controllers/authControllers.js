@@ -17,7 +17,7 @@ export async function signIn(req, res) {
     } = await getUserByEmail(email);
 
     if (!user) {
-      res.status(401).send("E-mail e/ou senha inválidos!");
+      res.status(401).send("Incorrect email and/or password!");
       return;
     }
 
@@ -27,7 +27,7 @@ export async function signIn(req, res) {
     );
 
     if (!decryptedPasswordByBcrypt) {
-      res.status(401).send("E-mail e/ou senha inválidos!");
+      res.status(401).send("Incorrect email and/or password!");
       return;
     }
     const token = jwt.sign(
