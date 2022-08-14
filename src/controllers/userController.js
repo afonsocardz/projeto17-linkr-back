@@ -8,7 +8,7 @@ export async function getUser(req, res) {
 
   try {
     const result = await getUserById(userId);
-    return request.send(result.rows[0]);
+    return res.send(result.rows[0]);
   } catch (err) {
     console.log(err);
     res.status(500).send([{ msg: "Erro ao ver posts", label: "error" }]);
