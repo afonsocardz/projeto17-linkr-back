@@ -27,7 +27,7 @@ async function validateToken(request, response, next) {
 
     response.locals.user = user[0];
     response.locals.UserId = user[0].id;
-    response.locals.token = token; 
+    response.locals.token = token;
 
     next();
   } catch (err) {
