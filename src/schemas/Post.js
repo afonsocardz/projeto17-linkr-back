@@ -4,10 +4,7 @@ const Post = joi.object({
   url: joi.string()
     .uri()
     .required(),
-  message: joi.string()
-  .empty(),
-  userId: joi.number()
-    .required(),
+  message: joi.string().allow(null, "")
 })
 
 export default Post;
