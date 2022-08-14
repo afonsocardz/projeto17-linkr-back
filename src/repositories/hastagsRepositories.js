@@ -27,5 +27,18 @@ async function createHashtags(hashtag) {
   return connection.query(`INSERT INTO hashtags ("hashtagName") VALUES $1`, [hashtag]);
 }
 
+async function returnPostsHashtags(hashtag){
+  return connection.query(
+    `
+      SELECT
+        p,id, p.url, p.message, p.title, p."userId", u.username, u."pictureUrl"
+      FROM posts p
+      JOIN users u ON p."userId" = u.id
+      JOIN posts_hashtags ph ON ph."postId" = p.id
+      WHERE ph."hashtagId" = (SELECT id FROM hashtags WHERE "hashtagName = $1")
+      ORDER BY "createdAt" DESC
+    `, [hashtag]
+    );
+}
 
-export { createHashtags, searchForHashtag, selectHashtags, trendingHashtags };
+export { createHashtags, searchForHashtag, selectHashtags, returnPostsHashtags, trendingHashtags };
