@@ -13,7 +13,7 @@ async function createPost(req, res) {
   }
 
   try {
-    const { rows } = await postRepository.createPost(user.id, post);
+    const {rows} = await postRepository.createPost(user.id, post);
     const postId =  rows[0].id;
 
     const postMessage = post.message;
@@ -23,6 +23,7 @@ async function createPost(req, res) {
       return res.sendStatus(201);
     } else {
       const hashtag = filterPostMessage.toString();
+      console.log(hashtag);
 
       const { rows, rowCount: metHashtag } = await postRepository.searchForHashtag(hashtag);
   
