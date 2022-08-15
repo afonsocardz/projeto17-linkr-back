@@ -22,15 +22,25 @@ export function deleteSessionByToken(token) {
   return connection.query(
     `DELETE FROM sessions 
     WHERE token = $1`,
-  [token],
-  )
-};
+    [token]
+  );
+}
 
 export function getUserById(userId) {
-  return connection.query(`
+  return connection.query(
+    `
     SELECT users.username, users."userPicture" AS "ProfileImage"
     FROM users
-    WHERE users.id = $1`, [userId],
-  )
-};
+    WHERE users.id = $1`,
+    [userId]
+  );
+}
 
+export function getUserByUsername(username) {
+  return connection.query(
+    `
+  SELECT u.id, u.username, u."userPicture" FROM users u WHERE LOWER(u.username) LIKE LOWER($1);
+  `,
+    [`${username}%`]
+  );
+}
