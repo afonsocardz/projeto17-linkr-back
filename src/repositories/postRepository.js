@@ -48,18 +48,14 @@ async function getAllPosts(userId) {
         likeStatus: status,
         whoLiked,
       };
-      console.log(whoLiked);
       return newObj;
     })
   );
-
-  console.log(countedPost);
 
   return countedPost;
 }
 
 async function likeByPostId(postId, userId) {
-  console.log(postId, userId);
   const {
     rows: [findLike],
   } = await connection.query(

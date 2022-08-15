@@ -35,7 +35,6 @@ async function getPosts(req, res) {
 async function likePost(req, res) {
   const { id: postId } = req.params;
   const user = res.locals.user;
-  console.log(user);
   try {
     await postRepository.likeByPostId(postId, user.id);
     res.sendStatus(200);
