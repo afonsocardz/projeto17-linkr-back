@@ -13,8 +13,30 @@ async function createPost(req, res) {
   }
 
   try {
-    await postRepository.createPost(user.id, post);
-    res.sendStatus(201);
+    const { rows } = await postRepository.createPost(user.id, post);
+    const postId =  rows[0].id;
+
+    const postMessage = post.message;
+    const filterPostMessage = postMessage.split(' ').filter((word) => word.startsWith('#'));
+
+    if (filterPostMessage.length === 0) {
+      return res.sendStatus(201);
+    } else {
+      const hashtag = filterPostMessage.toString();
+
+      const { rows, rowCount: metHashtag } = await postRepository.searchForHashtag(hashtag);
+  
+      if (metHashtag === 1) {
+        const hashtagId = rows[0].id;
+        await postRepository.insertPostsHashtags(postId, hashtagId);
+        res.sendStatus(201);
+      }else{
+        const { rows } = await postRepository.createHashtags(hashtag);
+        const hashtagId = rows[0].id;
+        await postRepository.insertPostsHashtags(postId, hashtagId);
+        res.sendStatus(201);
+      }
+    }
   } catch (err) {
     console.log(err);
     res.status(500).send([{ msg: "Erro ao fazer a postagem", label: "error" }]);
@@ -59,7 +81,6 @@ async function getPosts(req, res) {
 async function likePost(req, res) {
   const { id: postId } = req.params;
   const user = res.locals.user;
-  console.log(user);
   try {
     await postRepository.likeByPostId(postId, user.id);
     res.sendStatus(200);
