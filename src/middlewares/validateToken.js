@@ -17,7 +17,7 @@ async function validateToken(request, response, next) {
     const { rows: user } = await getUserByToken(token);
 
     if (user.length === 0 || user[0]?.email !== email) {
-      response.status(401).send();
+      response.status(401).send("Unauthorized");
       return;
     }
 
