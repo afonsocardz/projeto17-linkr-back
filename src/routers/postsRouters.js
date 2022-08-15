@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   createPost,
+  deletePost,
+  editPost,
   getPosts,
   getUserPosts,
   likePost,
@@ -14,6 +16,8 @@ const router = Router();
 
 router.get("/", getPosts);
 router.post("/:id", validateToken, likePost);
+router.put("/:id", validateToken, editPost);
+router.delete("/:id", validateToken, deletePost);
 router.post("/", validateToken, validateSchema(Post), validateUrl, createPost);
 router.get("/:id", validateToken, getUserPosts);
 
