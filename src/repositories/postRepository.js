@@ -12,33 +12,32 @@ async function createPost(
 }
 
 async function getAllPosts(userId) {
-  let id = userId;
-  if (id === "undefined") {
-    id = 0;
+  if (userId === "undefined") {
+    userId = 0;
   }
   const { rows: posts } = await connection.query(`
-    SELECT posts.*, users."userPicture", users.username, users.id FROM posts 
+    SELECT posts.*, users."userPicture", users.username, users.id as "userId" FROM posts 
     JOIN users ON users.id = posts."userId"
     ORDER BY posts."createdAt" DESC LIMIT 20;
   `);
-
+  
   const countedPost = await Promise.all(
     posts.map(async (post) => {
       const {
         rows: [likesCount],
       } = await connection.query(
         `
-      SELECT count(posts_likes.id) as likes, count(case when posts_likes."userId" = $2 then 1 end) as "likeStatus" FROM posts_likes JOIN users ON users.id = posts_likes."userId"
+      SELECT count(posts_likes.id) as likes, count(case when posts_likes."userId" = $2 and posts_likes."postId" = $1 then 1 end) as "likeStatus" FROM posts_likes JOIN users ON users.id = posts_likes."userId"
       WHERE posts_likes."postId" = $1 
     `,
-        [post.id, id]
+        [post.id, userId]
       );
       const { rows: whoLiked } = await connection.query(
         `
       SELECT users.username FROM posts_likes JOIN users ON users.id = posts_likes."userId" WHERE posts_likes."postId" = $1 AND posts_likes."userId" != $2
       LIMIT 2;
     `,
-        [post.id, id]
+        [post.id, userId]
       );
       const { likes, likeStatus } = likesCount;
       const status = likeStatus == 1 ? true : false;
@@ -48,14 +47,18 @@ async function getAllPosts(userId) {
         likeStatus: status,
         whoLiked,
       };
-      console.log(whoLiked);
       return newObj;
     })
   );
 
-  console.log(countedPost);
-
+  console.log(countedPost)
   return countedPost;
+}
+
+async function deletePostById(postId){
+  await connection.query(`
+    DELETE FROM posts WHERE id = $1
+  `,[postId]);
 }
 
 async function likeByPostId(postId, userId) {
@@ -87,11 +90,13 @@ async function likeByPostId(postId, userId) {
 }
 
 async function getPostsById(userId, searchedUserId) {
-  let id = userId;
+  if (userId === "undefined") {
+    userId = 0;
+  }
 
   const { rows: posts } = await connection.query(
     `
-  SELECT p.*, u."userPicture", u.username, u.id FROM posts p
+  SELECT p.*, u."userPicture", u.username, u.id as "userId" FROM posts p
     JOIN users u ON u.id = p."userId" WHERE p."userId" = $1
     ORDER BY p."createdAt" DESC LIMIT 20;
   `,
@@ -104,17 +109,17 @@ async function getPostsById(userId, searchedUserId) {
         rows: [likesCount],
       } = await connection.query(
         `
-      SELECT count(posts_likes.id) as likes, count(case when posts_likes."userId" = $2 then 1 end) as "likeStatus" FROM posts_likes JOIN users ON users.id = posts_likes."userId"
+      SELECT count(posts_likes.id) as likes, count(case when posts_likes."userId" = $2 and posts_likes."postId" = $1 then 1 end) as "likeStatus" FROM posts_likes JOIN users ON users.id = posts_likes."userId"
       WHERE posts_likes."postId" = $1 
     `,
-        [post.id, id]
+        [post.id, userId]
       );
       const { rows: whoLiked } = await connection.query(
         `
       SELECT users.username FROM posts_likes JOIN users ON users.id = posts_likes."userId" WHERE posts_likes."postId" = $1 AND posts_likes."userId" != $2
       LIMIT 2;
     `,
-        [post.id, id]
+        [post.id, userId]
       );
       const { likes, likeStatus } = likesCount;
       const status = likeStatus == 1 ? true : false;
@@ -131,9 +136,17 @@ async function getPostsById(userId, searchedUserId) {
   return countedPost;
 }
 
+async function editPostById(postId, userId, message){
+  await connection.query(`
+    UPDATE posts SET message = $1 WHERE id = $2 AND "userId" = $3
+  `, [message, postId, userId]);
+}
+
 export const postRepository = {
   createPost,
   getAllPosts,
   likeByPostId,
   getPostsById,
+  editPostById,
+  deletePostById,
 };

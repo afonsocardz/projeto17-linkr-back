@@ -21,6 +21,30 @@ async function createPost(req, res) {
   }
 }
 
+async function deletePost(req,res){
+  const {id} = req.params;
+  try {
+    await postRepository.deletePostById(id);
+    res.sendStatus(204);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+}
+
+async function editPost(req, res){
+  const {id} = req.params;
+  const {message} = req.body;
+  const user = res.locals.user;
+  try {
+    await postRepository.editPostById(id, user.id, message);
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+}
+
 async function getPosts(req, res) {
   const { id } = req.query;
   try {
@@ -57,4 +81,4 @@ async function getUserPosts(req, res) {
   }
 }
 
-export { createPost, getPosts, likePost, getUserPosts };
+export { createPost, getPosts, likePost, getUserPosts, editPost, deletePost };
