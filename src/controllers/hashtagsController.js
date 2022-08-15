@@ -1,10 +1,8 @@
 import {
-  createHashtags,
   returnPostsHashtags,
   searchForHashtag,
-  selectHashtags,
   trendingHashtags,
-} from "../repositories/hastagsRepositories.js";
+} from "../repositories/hashtagsRepository.js";
 
 async function getTrendingHashtags(req, res) {
   try {
@@ -19,20 +17,17 @@ async function getTrendingHashtags(req, res) {
 
 async function redirectHashtag(req, res) {
   const { hashtag } = req.params;
+  const newHashtag = "#"+hashtag
 
   try {
-    const { rowCount: matchHashtag } = await searchForHashtag(hashtag);
+    const { rowCount: metHashtag } = await searchForHashtag(newHashtag);
 
-    if (matchHashtag === 0) res.status(404).send("Hashtag not foud");
+    if (metHashtag === 0) return res.status(404).send("Hashtag not foud");
 
-    //retornar os posts relacionados aquela hashtag
+    const { rows: postsHashtags } = await returnPostsHashtags(newHashtag);
 
-    const { rows: postsHashtags, rowCount } = await returnPostsHashtags(
-      hashtag
-    );
+    if (postsHashtags.length === 0) return res.status(404).send("No posts related to this hashtag");
 
-    if (rowCount === 0) res.status(404).send("No posts related to this hashtag");
-    
     res.status(200).send(postsHashtags);
 
   } catch (error) {
@@ -41,25 +36,4 @@ async function redirectHashtag(req, res) {
   }
 }
 
-async function populatingHashtags(req, res) {
-  try {
-    const { rows: hashtag, rowCount: foundHashtag } = await selectHashtags();
-    console.log(hashtag);
-
-    if (foundHashtag === 0) return res.status(404).send("No hashtag was found");
-
-    const { rows, rowCount: metHashtag } = await searchForHashtag(hashtag);
-    console.log(rows);
-
-    if (metHashtag === 1) return res.status(409).send("Hashtag already exists");
-
-    await createHashtags(hashtag);
-
-    res.sendStatus(201);
-  } catch (error) {
-    console.error(error);
-    res.sendStatus(500);
-  }
-}
-
-export { getTrendingHashtags, redirectHashtag, populatingHashtags };
+export { getTrendingHashtags, redirectHashtag };
