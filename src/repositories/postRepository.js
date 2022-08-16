@@ -15,48 +15,40 @@ async function getAllPosts(userId) {
   if (userId === "undefined") {
     userId = 0;
   }
-  const { rows: posts } = await connection.query(`
-    SELECT posts.*, users."userPicture", users.username, users.id as "userId" FROM posts 
-    JOIN users ON users.id = posts."userId"
-    ORDER BY posts."createdAt" DESC LIMIT 20;
-  `);
-  
-  const countedPost = await Promise.all(
-    posts.map(async (post) => {
-      const {
-        rows: [likesCount],
-      } = await connection.query(
-        `
-      SELECT count(posts_likes.id) as likes, count(case when posts_likes."userId" = $2 and posts_likes."postId" = $1 then 1 end) as "likeStatus" FROM posts_likes JOIN users ON users.id = posts_likes."userId"
-      WHERE posts_likes."postId" = $1 
-    `,
-        [post.id, userId]
-      );
-      const { rows: whoLiked } = await connection.query(
-        `
-      SELECT users.username FROM posts_likes JOIN users ON users.id = posts_likes."userId" WHERE posts_likes."postId" = $1 AND posts_likes."userId" != $2
-      LIMIT 2;
-    `,
-        [post.id, userId]
-      );
-      const { likes, likeStatus } = likesCount;
-      const status = likeStatus == 1 ? true : false;
-      const newObj = {
-        ...post,
-        likes,
-        likeStatus: status,
-        whoLiked,
-      };
-      return newObj;
-    })
-  );
-  return countedPost;
+
+  const {rows: posts} = await connection.query(`
+  SELECT
+    posts.*,
+    users.username,
+    users."userPicture",
+    count(posts_likes."postId") AS likes,
+    array_agg(array [users.username]) AS "whoLiked",
+    count(
+      CASE
+        WHEN posts_likes."userId" = $1 THEN 1
+      END
+    ) as "likeStatus"
+  FROM
+    posts
+  JOIN users ON users.id = posts."userId"
+  left JOIN posts_likes ON posts_likes."postId" = posts.id
+  GROUP BY
+    posts.id,
+    users.username,
+    users."userPicture"
+  ORDER BY
+    posts."createdAt" DESC
+  LIMIT
+    20
+  `, [userId]);
+  const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} )
+  return mappedPosts;
 }
 
-async function deletePostById(postId){
+async function deletePostById(postId) {
   await connection.query(`
     DELETE FROM posts WHERE id = $1
-  `,[postId]);
+  `, [postId]);
 }
 
 async function likeByPostId(postId, userId) {
@@ -133,12 +125,12 @@ async function getPostsById(userId, searchedUserId) {
   return countedPost;
 }
 
-async function editPostById(postId, userId, message){
+async function editPostById(postId, userId, message) {
   await connection.query(`
     UPDATE posts SET message = $1 WHERE id = $2 AND "userId" = $3
   `, [message, postId, userId]);
 }
-async function insertPostsHashtags(postId, hashtagId){
+async function insertPostsHashtags(postId, hashtagId) {
   return connection.query(`INSERT INTO posts_hashtags ("postId", "hashtagId") VALUES ($1, $2)`, [postId, hashtagId]);
 }
 
