@@ -44,3 +44,21 @@ export function getUserByUsername(username) {
     [`${username}%`]
   );
 }
+
+export function getFollowedsByUserId(userId) {
+  return connection.query(
+    `
+  SELECT "followedUserId" FROM users_followers WHERE "userId" = $1
+  `,
+    [userId]
+  );
+}
+
+export function followUser(userId, followedUserId) {
+  return connection.query(
+    `
+  INSERT INTO users_followers ("userId", "followedUserId") VALUES ($1, $2)
+  `,
+    [userId, followedUserId]
+  );
+}
