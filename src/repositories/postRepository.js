@@ -22,7 +22,7 @@ async function getAllPosts(userId) {
     users.username,
     users."userPicture",
     count(posts_likes."postId") AS likes,
-    array_agg(array [users.username]) AS "whoLiked",
+    array_agg(users.username) AS "whoLiked",
     count(
       CASE
         WHEN posts_likes."userId" = $1 THEN 1
