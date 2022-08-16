@@ -4,7 +4,7 @@ async function createPost(
   userId,
   { url, message = null, image, description, title }
 ) {
-  await connection.query(
+  return await connection.query(
     `
     INSERT INTO posts (url, message, "userId", description, image, title) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
     [url, message, userId, description, image, title]
