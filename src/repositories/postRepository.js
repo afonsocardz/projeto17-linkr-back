@@ -18,7 +18,7 @@ async function getAllPosts(userId) {
   const { rows: posts } = await connection.query(`
     SELECT posts.*, users."userPicture", users.username, users.id as "userId" FROM posts 
     JOIN users ON users.id = posts."userId"
-    ORDER BY posts."createdAt" DESC LIMIT 20;
+    ORDER BY posts."createdAt" DESC;
   `);
   
   const countedPost = await Promise.all(
@@ -95,7 +95,7 @@ async function getPostsById(userId, searchedUserId) {
     `
   SELECT p.*, u."userPicture", u.username, u.id as "userId" FROM posts p
     JOIN users u ON u.id = p."userId" WHERE p."userId" = $1
-    ORDER BY p."createdAt" DESC LIMIT 20;
+    ORDER BY p."createdAt" DESC;
   `,
     [searchedUserId]
   );
