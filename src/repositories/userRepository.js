@@ -54,10 +54,19 @@ export function getFollowedsByUserId(userId) {
   );
 }
 
-export function followUser(userId, followedUserId) {
+export function insertFollowedUser(userId, followedUserId) {
   return connection.query(
     `
   INSERT INTO users_followers ("userId", "followedUserId") VALUES ($1, $2)
+  `,
+    [userId, followedUserId]
+  );
+}
+
+export function deleteFollowedUser(userId, followedUserId) {
+  return connection.query(
+    `
+  DELETE FROM users_followers WHERE "userId" = $1 AND "followedUserId" = $2
   `,
     [userId, followedUserId]
   );

@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  followUnfollow,
   getFolloweds,
   getUser,
   searchUser,
@@ -14,5 +15,7 @@ userRouter.get("/user/:userId", getUser);
 userRouter.get("/userSearch/:username", validateToken, searchUser);
 
 userRouter.get("/user/followeds/:userId", validateToken, getFolloweds);
+
+userRouter.post("/user/follow-unfollow", validateToken, followUnfollow);
 
 export default userRouter;
