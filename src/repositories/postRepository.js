@@ -15,7 +15,6 @@ async function getAllPosts(userId) {
   if (userId === "undefined") {
     userId = 0;
   }
-
   const {rows: posts} = await connection.query(`
   SELECT
     posts.*,
@@ -43,6 +42,7 @@ async function getAllPosts(userId) {
   `, [userId]);
   const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} )
   return mappedPosts;
+
 }
 
 async function deletePostById(postId) {
@@ -87,7 +87,7 @@ async function getPostsById(userId, searchedUserId) {
     `
   SELECT p.*, u."userPicture", u.username, u.id as "userId" FROM posts p
     JOIN users u ON u.id = p."userId" WHERE p."userId" = $1
-    ORDER BY p."createdAt" DESC LIMIT 20;
+    ORDER BY p."createdAt" DESC;
   `,
     [searchedUserId]
   );

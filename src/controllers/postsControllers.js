@@ -71,9 +71,17 @@ async function editPost(req, res){
 
 async function getPosts(req, res) {
   const { id } = req.query;
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1)* limit;
+  const endIndex = page * limit;
+  
   try {
-    const posts = await postRepository.getAllPosts(id);
-    res.status(200).send(posts);
+    const posts = await postRepository.getAllPosts(id, limit);
+    const newPosts = await posts.slice(startIndex, endIndex);
+  
+    res.status(200).send(newPosts);
   } catch (err) {
     console.log(err);
     res.status(500).send([{ msg: "Erro o carregar os posts", label: "error" }]);
