@@ -14,29 +14,30 @@ async function createPost(req, res) {
 
   try {
     const {rows} = await postRepository.createPost(user.id, post);
-    const postId =  rows[0].id;
+    const postId = rows[0].id;
 
     const postMessage = post.message;
     const filterPostMessage = postMessage.split(' ').filter((word) => word.startsWith('#'));
+    const size = filterPostMessage.length;    
 
-    if (filterPostMessage.length === 0) {
+    if (size === 0) {
       return res.sendStatus(201);
-    } else {
-      const hashtag = filterPostMessage.toString();
-      console.log(hashtag);
+    } else {   
+      for(let i=0; i<size; i++){
+        
+        const { rows, rowCount: metHashtag } = await postRepository.searchForHashtag(filterPostMessage[i]);
 
-      const { rows, rowCount: metHashtag } = await postRepository.searchForHashtag(hashtag);
-  
-      if (metHashtag === 1) {
-        const hashtagId = rows[0].id;
-        await postRepository.insertPostsHashtags(postId, hashtagId);
-        res.sendStatus(201);
-      }else{
-        const { rows } = await postRepository.createHashtags(hashtag);
-        const hashtagId = rows[0].id;
-        await postRepository.insertPostsHashtags(postId, hashtagId);
-        res.sendStatus(201);
+        if (metHashtag === 1) {
+          const hashtagId = rows[0].id;
+          await postRepository.insertPostsHashtags(postId, hashtagId);
+          
+        }else{
+          const { rows } = await postRepository.createHashtags(filterPostMessage[i]);
+          const hashtagId = rows[0].id;
+          await postRepository.insertPostsHashtags(postId, hashtagId);
+        }     
       }
+      res.sendStatus(201);
     }
   } catch (err) {
     console.log(err);

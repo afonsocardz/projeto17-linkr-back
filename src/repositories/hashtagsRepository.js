@@ -9,14 +9,13 @@ async function trendingHashtags() {
         FROM hashtags h
         LEFT JOIN posts_hashtags ph ON ph."hashtagId" = h.id 
         GROUP BY hashtag
-        ORDER BY trending DESC
-        LIMIT 20
+        ORDER BY trending DESC, h."hashtagName" ASC
+        LIMIT 10
     `
   );
 }
 
 async function searchForHashtag(newHashtag) {
-  console.log("search for hashtag");
   return connection.query(
     `SELECT * FROM hashtags WHERE "hashtagName" = $1`,
     [newHashtag]
