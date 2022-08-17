@@ -16,7 +16,6 @@ async function trendingHashtags() {
 }
 
 async function searchForHashtag(newHashtag) {
-  console.log("search for hashtag");
   return connection.query(
     `SELECT * FROM hashtags WHERE "hashtagName" = $1`,
     [newHashtag]
