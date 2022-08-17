@@ -37,12 +37,9 @@ async function getAllPosts(userId) {
     users."userPicture"
   ORDER BY
     posts."createdAt" DESC
-  LIMIT
-    20
   `, [userId]);
   const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} )
   return mappedPosts;
-
 }
 
 async function deletePostById(postId) {
