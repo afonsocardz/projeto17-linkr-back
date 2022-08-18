@@ -4,7 +4,6 @@ import {
   getFollowedUsersByUsername,
   getUnfollowedUsersByUsername,
   getUserById,
-  getUserByUsername,
   insertFollowedUser,
 } from "../repositories/userRepository.js";
 

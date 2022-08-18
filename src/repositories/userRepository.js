@@ -36,15 +36,6 @@ export function getUserById(userId) {
   );
 }
 
-export function getUserByUsername(username) {
-  return connection.query(
-    `
-  SELECT u.id, u.username, u."userPicture" FROM users u WHERE LOWER(u.username) LIKE LOWER($1);
-  `,
-    [`${username}%`]
-  );
-}
-
 export function getFollowedUsersByUsername(username, userId) {
   return connection.query(
     `
