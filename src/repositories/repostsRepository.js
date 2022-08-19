@@ -53,12 +53,16 @@ async function shares(userId) {
     GROUP BY p.id, u.id
     UNION
     SELECT
-        p.id, p.title, p.url, p.message,
-        p."userId" AS "postOwner", p."createdAt" AS "postedTime",
+        p.id,
+        p.title,
+        p.url,
+        p.message,
+        p."userId" AS "postOwner",
+        p."createdAt" AS "postedTime",
         u1.username, u1."userPicture",
         TRUE AS "isRepost",
-        ur."userId" AS "repostOwner", u2.username AS "repostUser",
-
+        ur."userId" AS "repostOwner",
+        u2.username AS "repostUser",
         (
             SELECT COUNT(ur.id)
             FROM users_reposts ur
@@ -102,7 +106,6 @@ async function shares(userId) {
         ur."userId",
         u2.id,
         ur."createdAt"
-
     `,
     [userId]
   );
