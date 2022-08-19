@@ -12,6 +12,7 @@ async function selectCommentByPostId(postId, userId) {
     comments."userId",
     comments.comment_message,
     users.username,
+    users."userPicture",
     CASE
       WHEN comments."userId" = posts."userId" THEN 'Author'
       when comments."userId" = f."followedUserId" then 'Following'
