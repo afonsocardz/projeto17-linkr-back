@@ -4,13 +4,19 @@ async function shares(userId) {
   return connection.query(
     `
     SELECT 
-        p.id, p.title, p.url, p.message,
-        p."userId" AS "postOwner", p."createdAt" AS "postedTime"
+        p.id,
+        p.title,
+        p.url,
+        p.message,
+        p."userId" AS "postOwner",
+        p."createdAt" AS "postedTime",
         u.username, u."userPicture",
-        FALSE AS "isRepost", NULL AS "repostOwner", NULL AS "repostUser",
+        FALSE AS "isRepost",
+        NULL AS "repostOwner",
+        NULL AS "repostUser",
         (
             SELECT COUNT(ur.id)
-            FROM user_reposts ur
+            FROM users_reposts ur
             WHERE ur."postId" = p.id
         ) AS reposts,
         (
@@ -18,14 +24,15 @@ async function shares(userId) {
             FROM comments c
             WHERE c."postId" = p.id
         ) AS comments,
-        ARRAY_AGG(
-            SELECT JSON_BUILD_OBJECT(
-                'userId', u.id,
-                'username', u.username
-            )
-            FROM posts_likes pl
-            JOIN users u ON u.id = pl."userId"
-            WHERE pl."postId" = p.id
+        (
+            SELECT ARRAY_AGG(
+                jsonb_build_object(
+                    'userId', u.id,
+                    'username', u.username
+                ))
+                FROM posts_likes pl
+                JOIN users u ON u.id = pl."userId"
+                WHERE pl."postId" = p.id
         ) AS "whoLiked",
         EXISTS (
             SELECT *
@@ -35,25 +42,26 @@ async function shares(userId) {
     FROM 
         posts p
     JOIN users u ON u.id = p."userId"
-    LEFT JOIN posts_likes pk ON pl."postId" = p.id
+    LEFT JOIN posts_likes pl ON pl."postId" = p.id
     WHERE p."userId" = ANY
         ( 
             SELECT uf."followedUserId"
-            FROM users_follwers uf
+            FROM users_followers uf
             WHERE uf."followedUserId" = $1
         )
         OR p."userId" = $1
+    GROUP BY p.id, u.id
     UNION
     SELECT
         p.id, p.title, p.url, p.message,
-        p."userId" AS "postOwner", p."createdAt" AS "postedTime"
+        p."userId" AS "postOwner", p."createdAt" AS "postedTime",
         u1.username, u1."userPicture",
         TRUE AS "isRepost",
         ur."userId" AS "repostOwner", u2.username AS "repostUser",
-        ur."createdAt" AS "repostedTime"
+
         (
             SELECT COUNT(ur.id)
-            FROM user_reposts rs
+            FROM users_reposts ur
             WHERE ur."postId" = p.id
         ) AS reposts,
         (
@@ -61,14 +69,15 @@ async function shares(userId) {
             FROM comments c
             WHERE c."postId" = p.id
         ) AS comments,
-        ARRAY_AGG(
-            SELECT JSON_BUILD_OBJECT(
-                'userId', u.id,
-                'username', u.username
-            )
-            FROM posts_likes pl
-            JOIN users u ON u.id = pl."userId"
-            WHERE pl."postId" = p.id
+        (
+            SELECT ARRAY_AGG(
+                jsonb_build_object(
+                    'userId', u.id,
+                    'username', u.username
+                ))
+                FROM posts_likes pl
+                JOIN users u ON u.id = pl."userId"
+                WHERE pl."postId" = p.id
         ) AS "whoLiked",
         EXISTS (
             SELECT *
@@ -76,18 +85,24 @@ async function shares(userId) {
             WHERE pl."postId" = p.id AND pl."userId" = $1
             ) AS "likeStatus"
     FROM posts p
-    JOIN users u1 ON  u1.id = p."userId"
+    JOIN users u1 ON u1.id = p."userId"
     JOIN users_reposts ur ON ur."postId" = p.id
     LEFT JOIN posts_likes pl ON pl."postId" = p.id
     JOIN users u2 ON ur."userId" = u2.id
     WHERE p."userId" = ANY
         ( 
             SELECT uf."followedUserId"
-            FROM users_follwers uf
+            FROM users_followers uf
             WHERE uf."followedUserId" = $1
         )
         OR p."userId" = $1
-    ORDER BY "repostedTime" DESC;
+    GROUP BY 
+        p.id,
+        u1.id,
+        ur."userId",
+        u2.id,
+        ur."createdAt"
+
     `,
     [userId]
   );
