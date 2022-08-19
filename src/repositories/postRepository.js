@@ -15,7 +15,8 @@ async function getAllPosts(userId, limit) {
   if (userId === "undefined") {
     userId = 0;
   }
-  const {rows: posts} = await connection.query(`
+  const { rows: posts } = await connection.query(
+    `
   SELECT
     posts.*,
     users.username,
@@ -33,6 +34,7 @@ async function getAllPosts(userId, limit) {
   JOIN users ON users.id = posts."userId"
   left JOIN posts_likes ON posts_likes."postId" = posts.id
   left join posts_comments on posts_comments."postId" = posts.id
+  WHERE posts."userId" IN (SELECT "followedUserId" FROM users_followers WHERE "userId" = $1)
   GROUP BY
     posts.id,
     users.username,
@@ -41,15 +43,24 @@ async function getAllPosts(userId, limit) {
     posts."createdAt" DESC
   LIMIT
     $2
-  `, [userId, limit]);
-  const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} )
+  `,
+    [userId, limit]
+  );
+  const mappedPosts = posts.map((post) =>
+    post.likeStatus == 1
+      ? { ...post, likeStatus: true }
+      : { ...post, likeStatus: false }
+  );
   return mappedPosts;
 }
 
 async function deletePostById(postId) {
-  await connection.query(`
+  await connection.query(
+    `
     DELETE FROM posts WHERE id = $1
-  `, [postId]);
+  `,
+    [postId]
+  );
 }
 
 async function likeByPostId(postId, userId) {
@@ -84,7 +95,8 @@ async function getPostsById(userId, searchedUserId) {
     userId = 0;
   }
 
-  const {rows: posts} = await connection.query(`
+  const { rows: posts } = await connection.query(
+    `
   SELECT
     posts.*,
     users.username,
@@ -109,26 +121,43 @@ async function getPostsById(userId, searchedUserId) {
     posts."createdAt" DESC
   LIMIT
     20
-  `, [userId, searchedUserId]);
-  const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} )
+  `,
+    [userId, searchedUserId]
+  );
+  const mappedPosts = posts.map((post) =>
+    post.likeStatus == 1
+      ? { ...post, likeStatus: true }
+      : { ...post, likeStatus: false }
+  );
   return mappedPosts;
 }
 
 async function editPostById(postId, userId, message) {
-  await connection.query(`
+  await connection.query(
+    `
     UPDATE posts SET message = $1 WHERE id = $2 AND "userId" = $3
-  `, [message, postId, userId]);
+  `,
+    [message, postId, userId]
+  );
 }
 async function insertPostsHashtags(postId, hashtagId) {
-  return connection.query(`INSERT INTO posts_hashtags ("postId", "hashtagId") VALUES ($1, $2)`, [postId, hashtagId]);
+  return connection.query(
+    `INSERT INTO posts_hashtags ("postId", "hashtagId") VALUES ($1, $2)`,
+    [postId, hashtagId]
+  );
 }
 
 async function searchForHashtag(hashtag) {
-  return connection.query(`SELECT * FROM hashtags WHERE "hashtagName" = $1`, [hashtag]);
+  return connection.query(`SELECT * FROM hashtags WHERE "hashtagName" = $1`, [
+    hashtag,
+  ]);
 }
 
 async function createHashtags(hashtag) {
-  return connection.query(`INSERT INTO hashtags ("hashtagName") VALUES ($1) RETURNING id`, [hashtag]);
+  return connection.query(
+    `INSERT INTO hashtags ("hashtagName") VALUES ($1) RETURNING id`,
+    [hashtag]
+  );
 }
 
 export const postRepository = {
