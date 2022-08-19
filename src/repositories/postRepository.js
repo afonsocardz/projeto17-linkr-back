@@ -39,9 +39,8 @@ async function getAllPosts(userId, limit) {
     users."userPicture"
   ORDER BY
     posts."createdAt" DESC
-  LIMIT
-    $2
-  `, [userId, limit]);
+  `, [userId]);
+
   const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} )
   return mappedPosts;
 }
