@@ -103,6 +103,7 @@ async function likePost(req, res) {
 async function getUserPosts(req, res) {
   const { id: searchedUserId } = req.params;
   const { id } = req.query;
+
   try {
     const posts = await postRepository.getPostsById(id, searchedUserId);
     res.status(200).send(posts);

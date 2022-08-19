@@ -49,6 +49,9 @@ export async function getFolloweds(req, res) {
 
 export async function followUnfollow(req, res) {
   const { userId, followedUserId } = req.body;
+  if (!userId || !followedUserId) {
+    return res.send("Doidera!");
+  }
   const { user } = res.locals;
   if (Number(user.id) !== Number(userId)) {
     return res.status(401).send("Não autorizado!");
@@ -64,7 +67,7 @@ export async function followUnfollow(req, res) {
     }
     const { rows: followeds } = await getFollowedsByUserId(userId);
     const isFollowed = followeds?.filter(
-      (followed) => (followed.followedUserId = followedUserId)
+      (followed) => followed.followedUserId === Number(followedUserId)
     );
     if (isFollowed.length === 0) {
       await insertFollowedUser(userId, followedUserId);
