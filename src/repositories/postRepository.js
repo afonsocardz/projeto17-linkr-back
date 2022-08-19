@@ -22,7 +22,7 @@ async function getAllPosts(userId, limit) {
     users.username,
     users."userPicture",
     count(posts_likes."postId") AS likes,
-    count(posts_comments."postId") as comments,
+    count(comments."postId") as comments,
     array_agg(users.username) AS "whoLiked",
     count(
       CASE
@@ -33,7 +33,7 @@ async function getAllPosts(userId, limit) {
     posts
   JOIN users ON users.id = posts."userId"
   left JOIN posts_likes ON posts_likes."postId" = posts.id
-  left join posts_comments on posts_comments."postId" = posts.id
+  left join comments on comments."postId" = posts.id
   WHERE posts."userId" IN (SELECT "followedUserId" FROM users_followers WHERE "userId" = $1)
   GROUP BY
     posts.id,
@@ -41,16 +41,10 @@ async function getAllPosts(userId, limit) {
     users."userPicture"
   ORDER BY
     posts."createdAt" DESC
-  LIMIT
-    $2
-  `,
-    [userId, limit]
-  );
-  const mappedPosts = posts.map((post) =>
-    post.likeStatus == 1
-      ? { ...post, likeStatus: true }
-      : { ...post, likeStatus: false }
-  );
+
+  `, [userId]);
+
+  const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} );
   return mappedPosts;
 }
 
