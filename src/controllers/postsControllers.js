@@ -83,7 +83,7 @@ async function getPosts(req, res) {
   try {
     const posts = await postRepository.getAllPosts(id, limit);
     const newPosts = await posts.slice(startIndex, endIndex);
-
+    
     res.status(200).send(newPosts);
   } catch (err) {
     console.log(err);
@@ -111,7 +111,7 @@ async function getUserPosts(req, res) {
 
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
-  
+
   try {
     const posts = await postRepository.getPostsById(id, searchedUserId);
     const newPosts = await posts.slice(startIndex, endIndex);
