@@ -11,37 +11,68 @@ async function createPost(
   );
 }
 
-async function getAllPosts(userId, limit) {
+async function getAllPosts(userId) {
   if (userId === "undefined") {
     userId = 0;
   }
   const { rows: posts } = await connection.query(
     `
-  SELECT
-    posts.*,
-    users.username,
-    users."userPicture",
-    count(posts_likes."postId") AS likes,
-    count(comments."postId") as comments,
-    array_agg(users.username) AS "whoLiked",
-    count(
-      CASE
-        WHEN posts_likes."userId" = $1 THEN 1
-      END
-    ) as "likeStatus"
-  FROM
-    posts
-  JOIN users ON users.id = posts."userId"
-  left JOIN posts_likes ON posts_likes."postId" = posts.id
-  left join comments on comments."postId" = posts.id
-  WHERE posts."userId" IN (SELECT "followedUserId" FROM users_followers WHERE "userId" = $1)
-  GROUP BY
-    posts.id,
-    users.username,
-    users."userPicture"
-  ORDER BY
-    posts."createdAt" DESC
-
+    SELECT
+      posts.*,
+      users.username,
+      users."userPicture",
+      count(posts_likes."postId") AS likes,
+      comments.count AS comments,
+      who_liked."whoLiked" as "whoLiked",
+      count(
+        CASE
+          WHEN posts_likes."userId" = $1 THEN 1
+        END
+      ) AS "likeStatus"
+    FROM
+      (
+        SELECT
+          posts.id AS "postId",
+          COUNT(comments."postId") AS count
+        FROM
+          comments
+          RIGHT JOIN posts ON posts.id = comments."postId"
+        GROUP BY
+          posts.id
+      ) AS comments,
+      (
+        SELECT
+          posts.id AS "postId",
+          (array_agg(users.username))[0:3] as "whoLiked"
+        FROM
+          posts
+          LEFT JOIN posts_likes ON posts.id = posts_likes."postId"
+          LEFT JOIN users ON users.id = posts_likes."userId"
+        GROUP BY
+          posts.id
+      ) AS who_liked,
+      posts
+      JOIN users ON users.id = posts."userId"
+      LEFT JOIN posts_likes ON posts_likes."postId" = posts.id
+    WHERE
+      posts."userId" IN (
+        SELECT
+          "followedUserId"
+        FROM
+          users_followers
+        WHERE
+          "userId" = $1
+      )
+      AND comments."postId" = posts.id
+      AND who_liked."postId" = posts.id
+    GROUP BY
+      posts.id,
+      users.username,
+      users."userPicture",
+      comments.count,
+      who_liked."whoLiked"
+    ORDER BY
+      posts."createdAt" DESC
   `, [userId]);
 
   const mappedPosts = posts.map(post => post.likeStatus == 1 ? {...post, likeStatus: true} : {...post, likeStatus: false} );
@@ -91,30 +122,63 @@ async function getPostsById(userId, searchedUserId) {
 
   const { rows: posts } = await connection.query(
     `
-  SELECT
+    SELECT
     posts.*,
     users.username,
     users."userPicture",
     count(posts_likes."postId") AS likes,
-    array_agg(users.username) AS "whoLiked",
+    comments.count AS comments,
+    who_liked."whoLiked" as "whoLiked",
     count(
       CASE
         WHEN posts_likes."userId" = $1 THEN 1
       END
-    ) as "likeStatus"
+    ) AS "likeStatus"
   FROM
+    (
+      SELECT
+        posts.id AS "postId",
+        COUNT(comments."postId") AS count
+      FROM
+        comments
+        RIGHT JOIN posts ON posts.id = comments."postId"
+      GROUP BY
+        posts.id
+    ) AS comments,
+    (
+      SELECT
+        posts.id AS "postId",
+        (array_agg(users.username))[0:3] as "whoLiked"
+      FROM
+        posts
+        LEFT JOIN posts_likes ON posts.id = posts_likes."postId"
+        LEFT JOIN users ON users.id = posts_likes."userId"
+      GROUP BY
+        posts.id
+    ) AS who_liked,
     posts
-  JOIN users ON users.id = posts."userId"
-  left JOIN posts_likes ON posts_likes."postId" = posts.id
-  WHERE posts."userId" = $2
+    JOIN users ON users.id = posts."userId"
+    LEFT JOIN posts_likes ON posts_likes."postId" = posts.id
+  WHERE
+    posts."userId" IN (
+      SELECT
+        "followedUserId"
+      FROM
+        users_followers
+      WHERE
+        "userId" = $1
+    )
+    AND comments."postId" = posts.id
+    AND who_liked."postId" = posts.id
+    AND posts."userId" = $2
   GROUP BY
     posts.id,
     users.username,
-    users."userPicture"
+    users."userPicture",
+    comments.count,
+    who_liked."whoLiked"
   ORDER BY
     posts."createdAt" DESC
-  LIMIT
-    20
   `,
     [userId, searchedUserId]
   );
