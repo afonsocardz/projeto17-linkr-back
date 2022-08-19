@@ -2,22 +2,28 @@ import connection from "../config/postgres.js";
 
 async function insertComment(userId, { commentMessage, postId }) {
   await connection.query(`
-  DO $$
-      DECLARE comment_id int;
-    BEGIN
-      INSERT INTO comments (comment_message, "userId") VALUES ('${commentMessage}', '${userId}') RETURNING id INTO comment_id;
-      INSERT INTO posts_comments ("commentId", "postId") VALUES (comment_id, '${postId}');
-  END $$
-  `);
+    INSERT INTO comments (comment_message, "userId", "postId") VALUES ($1, $2, $3)
+  `,[commentMessage, userId, postId]);
 }
 
-async function selectCommentByPostId(postId){
-  const {rows: comments} = await connection.query(`
-    SELECT comments.comment_message, users.username from posts_comments
-    join comments on comments.id = posts_comments."commentId"
-    join users on users.id = comments."userId"
-    where posts_comments."postId" = $1
-  `,[postId]);
+async function selectCommentByPostId(postId, userId) {
+  const { rows: comments } = await connection.query(`
+  SELECT
+    comments."userId",
+    comments.comment_message,
+    users.username,
+    CASE
+      WHEN comments."userId" = posts."userId" THEN 'Author'
+      when comments."userId" = f."followedUserId" then 'Following'
+    END AS STATUS
+  FROM
+    comments
+    inner JOIN users ON users.id = comments."userId"
+    inner JOIN posts ON posts.id = comments."postId"
+    left join users_followers as f on f."followedUserId" = comments."userId" and f."userId" = $2
+  WHERE
+    comments."postId" = $1;
+  `, [postId, userId]);
   return comments;
 }
 

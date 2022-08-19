@@ -17,7 +17,7 @@ async function getCommentsByPostId(req, res){
   const user = res.locals.user;
   const {postId} = req.query;
   try {
-    const comments = await commentRepository.selectCommentByPostId(postId);
+    const comments = await commentRepository.selectCommentByPostId(postId, user.id);
     res.status(200).send(comments);
   } catch (err) {
     console.log(err);
