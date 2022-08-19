@@ -1,8 +1,9 @@
 import {
   deleteFollowedUser,
   getFollowedsByUserId,
+  getFollowedUsersByUsername,
+  getUnfollowedUsersByUsername,
   getUserById,
-  getUserByUsername,
   insertFollowedUser,
 } from "../repositories/userRepository.js";
 
@@ -20,10 +21,19 @@ export async function getUser(req, res) {
 
 export async function searchUser(req, res) {
   const { username } = req.params;
+  const { user } = res.locals;
 
   try {
-    const { rows: user } = await getUserByUsername(username);
-    res.status(200).send(user);
+    const { rows: followedUsers } = await getFollowedUsersByUsername(
+      username,
+      Number(user.id)
+    );
+    const { rows: unfollowedUsers } = await getUnfollowedUsersByUsername(
+      username,
+      Number(user.id)
+    );
+    const usersList = [...followedUsers, ...unfollowedUsers];
+    res.status(200).send(usersList);
   } catch (err) {
     console.log(err);
     res.status(500).send("Erro interno!");
@@ -39,7 +49,6 @@ export async function getFolloweds(req, res) {
   }
   try {
     const { rows: followeds } = await getFollowedsByUserId(userId);
-    console.log(followeds);
     res.status(200).send(followeds);
   } catch (err) {
     console.log(err);

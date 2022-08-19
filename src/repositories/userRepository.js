@@ -36,12 +36,21 @@ export function getUserById(userId) {
   );
 }
 
-export function getUserByUsername(username) {
+export function getFollowedUsersByUsername(username, userId) {
   return connection.query(
     `
-  SELECT u.id, u.username, u."userPicture" FROM users u WHERE LOWER(u.username) LIKE LOWER($1);
+  SELECT u.id, u.username, u."userPicture" FROM users u WHERE LOWER(u.username) LIKE LOWER($1) AND u.id IN (SELECT "followedUserId" FROM users_followers WHERE "userId" = $2);
   `,
-    [`${username}%`]
+    [`${username}%`, userId]
+  );
+}
+
+export function getUnfollowedUsersByUsername(username, userId) {
+  return connection.query(
+    `
+  SELECT u.id, u.username, u."userPicture" FROM users u WHERE LOWER(u.username) LIKE LOWER($1) AND u.id NOT IN (SELECT "followedUserId" FROM users_followers WHERE "userId" = $2);
+  `,
+    [`${username}%`, userId]
   );
 }
 
