@@ -21,7 +21,7 @@ async function getAllPosts(userId, limit) {
     users.username,
     users."userPicture",
     count(posts_likes."postId") AS likes,
-    count(posts_comments."postId") as comments,
+    count(comments."postId") as comments,
     array_agg(users.username) AS "whoLiked",
     count(
       CASE
@@ -32,7 +32,7 @@ async function getAllPosts(userId, limit) {
     posts
   JOIN users ON users.id = posts."userId"
   left JOIN posts_likes ON posts_likes."postId" = posts.id
-  left join posts_comments on posts_comments."postId" = posts.id
+  left join comments on comments."postId" = posts.id
   GROUP BY
     posts.id,
     users.username,
