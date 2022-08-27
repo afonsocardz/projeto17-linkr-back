@@ -83,7 +83,7 @@ async function getPosts(req, res) {
   try {
     const posts = await postRepository.getAllPosts(id, limit);
     const newPosts = await posts.slice(startIndex, endIndex);
-
+    
     res.status(200).send(newPosts);
   } catch (err) {
     console.log(err);
@@ -106,10 +106,17 @@ async function likePost(req, res) {
 async function getUserPosts(req, res) {
   const { id: searchedUserId } = req.params;
   const { id } = req.query;
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
 
   try {
     const posts = await postRepository.getPostsById(id, searchedUserId);
-    res.status(200).send(posts);
+    const newPosts = await posts.slice(startIndex, endIndex);
+
+    res.status(200).send(newPosts);
   } catch (err) {
     console.log(err);
     res.status(500).send([{ msg: "Erro o carregar os posts", label: "error" }]);
